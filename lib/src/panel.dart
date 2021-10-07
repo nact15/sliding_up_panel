@@ -442,7 +442,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
   Widget _gestureHandler({required Widget child}) {
     if (!widget.isDraggable) return child;
 
-    if (widget.panel != null) {
+    if (widget.panel != null || widget.panelBuilder != null) {
       return GestureDetector(
         onVerticalDragUpdate: (DragUpdateDetails dets) =>
             _onGestureSlide(dets.delta.dy),
