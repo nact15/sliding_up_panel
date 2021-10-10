@@ -11,6 +11,7 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/rendering.dart';
 
 enum SlideDirection {
   UP,
@@ -162,8 +163,7 @@ class SlidingUpPanel extends StatefulWidget {
     this.isDraggable = true,
     this.slideDirection = SlideDirection.UP,
     this.defaultPanelState = PanelState.CLOSED,
-  })
-      : assert(panelBuilder != null),
+  })  : assert(panelBuilder != null),
         assert(0 <= backdropOpacity && backdropOpacity <= 1.0),
         assert(snapPoint == null || 0 < snapPoint && snapPoint < 1.0),
         super(key: key);
@@ -191,7 +191,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
         value: widget.defaultPanelState == PanelState.CLOSED
             ? 0.0
             : 1.0 //set the default panel state (i.e. set initial value of _ac)
-    )
+        )
       ..addListener(() {
         if (widget.onPanelSlide != null) widget.onPanelSlide!(_ac.value);
 
@@ -205,10 +205,12 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     _sc = ScrollController();
     _sc.addListener(() {
       if (widget.isDraggable && !_scrollingEnabled) _sc.jumpTo(0);
-      if (_sc.position.pixels == 0) {
-        setState(() {
-          _scrollingEnabled = false;
-        });
+      if (_sc.position.userScrollDirection == ScrollDirection.forward){
+        if (_sc.position.pixels == 0) {
+          setState(() {
+            _scrollingEnabled = false;
+          });
+        }
       }
     });
 
@@ -220,32 +222,32 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     return Align(
       alignment: widget.slideDirection == SlideDirection.UP ? Alignment.bottomCenter : Alignment.topCenter,
       child:
-      //the actual sliding part
-      !_isPanelVisible
-          ? Container()
-          : _gestureHandler(
-        child: AnimatedBuilder(
-          animation: _ac,
-          builder: (context, child) {
-            return Container(
-              height: _ac.value * (widget.maxHeight - widget.minHeight) + widget.minHeight,
-              margin: widget.margin,
-              padding: widget.padding,
-              decoration: BoxDecoration(
-                border: widget.border,
-                borderRadius: widget.borderRadius,
-                boxShadow: widget.boxShadow,
-                color: widget.color,
-              ),
-              child: child,
-            );
-          },
-          child: Container(
-            height: widget.maxHeight,
-            child: widget.panelBuilder!(_sc, _physics),
-          ),
-        ),
-      ),
+          //the actual sliding part
+          !_isPanelVisible
+              ? Container()
+              : _gestureHandler(
+                  child: AnimatedBuilder(
+                    animation: _ac,
+                    builder: (context, child) {
+                      return Container(
+                        height: _ac.value * (widget.maxHeight - widget.minHeight) + widget.minHeight,
+                        margin: widget.margin,
+                        padding: widget.padding,
+                        decoration: BoxDecoration(
+                          border: widget.border,
+                          borderRadius: widget.borderRadius,
+                          boxShadow: widget.boxShadow,
+                          color: widget.color,
+                        ),
+                        child: child,
+                      );
+                    },
+                    child: Container(
+                      height: widget.maxHeight,
+                      child: widget.panelBuilder!(_sc, _physics),
+                    ),
+                  ),
+                ),
     );
   }
 
@@ -267,16 +269,6 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     return GestureDetector(
       onVerticalDragUpdate: (DragUpdateDetails dets) => _onGestureSlide(dets.delta.dy),
       onVerticalDragEnd: (DragEndDetails dets) => _onGestureEnd(dets.velocity),
-      child: child,
-    );
-
-    return Listener(
-      onPointerDown: (PointerDownEvent p) => _vt.addPosition(p.timeStamp, p.position),
-      onPointerMove: (PointerMoveEvent p) {
-        _vt.addPosition(p.timeStamp, p.position); // add current position for velocity tracking
-        _onGestureSlide(p.delta.dy);
-      },
-      onPointerUp: (PointerUpEvent p) => _onGestureEnd(_vt.getVelocity()),
       child: child,
     );
   }
@@ -327,7 +319,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     double d2Close = _ac.value;
     double d2Open = 1 - _ac.value;
     double d2Snap =
-    ((widget.snapPoint ?? 3) - _ac.value).abs(); // large value if null results in not every being the min
+        ((widget.snapPoint ?? 3) - _ac.value).abs(); // large value if null results in not every being the min
     double minDistance = min(d2Close, min(d2Snap, d2Open));
 
     // check if velocity is sufficient for a fling
