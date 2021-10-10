@@ -231,20 +231,17 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
               height: _ac.value * (widget.maxHeight - widget.minHeight) + widget.minHeight,
               margin: widget.margin,
               padding: widget.padding,
-              decoration: widget.renderPanelSheet
-                  ? BoxDecoration(
+              decoration: BoxDecoration(
                 border: widget.border,
                 borderRadius: widget.borderRadius,
                 boxShadow: widget.boxShadow,
                 color: widget.color,
-              )
-                  : null,
+              ),
               child: child,
             );
           },
           child: Container(
             height: widget.maxHeight,
-            color: Colors.green,
             child: widget.panelBuilder!(_sc, _physics),
           ),
         ),
