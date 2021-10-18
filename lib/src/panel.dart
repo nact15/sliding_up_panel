@@ -251,7 +251,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     );
   }
 
-  ScrollPhysics get _physics => _scrollingEnabled ? AlwaysScrollableScrollPhysics() : NeverScrollableScrollPhysics();
+  ScrollPhysics get _physics => _scrollingEnabled ? ClampingScrollPhysics() : NeverScrollableScrollPhysics();
 
   @override
   void dispose() {
